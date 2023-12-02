@@ -41,7 +41,7 @@ typedef struct newswapspace
 
 newswapspace new_swapspace(char *filename);
 
-void free_swapspace(swapspace *);
+void free_swapspace(swapspace **);
 
 page *get_page(const swapspace *, const int idx);
 

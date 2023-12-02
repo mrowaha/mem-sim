@@ -25,8 +25,9 @@ int main(const int argc, const char *argv[])
     }
   }
 
+  swapspace *ssptr = backingstore.ss;
+  free_swapspace(&ssptr);
 exit:
-  free_swapspace(ss);
   free_cmdargs(process_args);
   return EXIT_SUCCESS;
 }

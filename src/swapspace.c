@@ -44,6 +44,7 @@ newswapspace new_swapspace(char *filename)
 {
   newswapspace invalidreturn = {.isnew = false, .ss = NULL};
   // validate filename length
+  printf("string length: %ld\n", strlen(filename));
   if (strlen(filename) >= 64)
   {
     fprintf(stderr, "new_swapspace: filename cannot be longer than 63 characters");
@@ -85,8 +86,10 @@ newswapspace new_swapspace(char *filename)
   ss->descriptor = fileno(ss_store);
   if (fstat(ss->descriptor, &sb) == -1)
   {
+
     perror("could not get backing store stats");
     close(ss->descriptor);
+    free(ss_store);
     free(ss);
     return invalidreturn;
   }
@@ -96,22 +99,24 @@ newswapspace new_swapspace(char *filename)
 
   if (!exists && !make_backingstore(ss))
   {
-    free_swapspace(ss);
+    free(ss_store);
+    free_swapspace(&ss);
     return invalidreturn;
   }
 
+  free(ss_store);
   newswapspace validreturn = {.isnew = !exists, .ss = ss};
   return validreturn;
 }
 
-void free_swapspace(swapspace *ss)
+void free_swapspace(swapspace **ss)
 {
-  if (ss != NULL)
+  if (ss != NULL && (*ss) != NULL)
   {
-    munmap(ss->memorymap, ss->size);
-    close(ss->descriptor);
-    free(ss);
-    ss = NULL;
+    munmap((*ss)->memorymap, (*ss)->size);
+    close((*ss)->descriptor);
+    free((*ss));
+    *ss = NULL;
   }
 }
 
