@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 /* page size in bytes */
 #define PAGESIZE 64
@@ -12,7 +13,7 @@
 
 typedef struct page
 {
-  char content[PAGESIZE];
+  int8_t content[PAGESIZE];
 } page;
 
 page new_page(void);

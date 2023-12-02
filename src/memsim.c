@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include "memsimarg.h"
 #include "swapspace.h"
+#include "pagetable.h"
 
 cmd_args *process_args;
 swapspace *ss;
 
 int main(const int argc, const char *argv[])
 {
+
   process_args = new_cmdargs();
   if (!init_cmdargs(process_args, argc, argv))
     goto exit;
