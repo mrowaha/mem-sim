@@ -12,16 +12,16 @@ ALGO=FIFO
 TICK=2
 OUTFILE=./out/outfile
 
-all: sim-build
+all: clean build run
+ 
+build: ./src/*.c
+	@$(CC) ./src/*.c -o ./bin/memsim $(CFLAGS) $(SFLAGS)
 
-sim-build: ./src/*.c
-	$(CC) ./src/*.c -o ./bin/memsim $(CFLAGS) $(SFLAGS)
+run:
+	@./bin/memsim -p $(LEVEL) -r $(ADDRFILE) -s $(SWAPFILE) -f $(FCOUNT) -a $(ALGO) -t $(TICK) -o $(OUTFILE)
 
-sim-run:
-	./bin/memsim -p $(LEVEL) -r $(ADDRFILE) -s $(SWAPFILE) -f $(FCOUNT) -a $(ALGO) -t $(TICK) -o $(OUTFILE)
-
-sim-leak:
-	valgrind --leak-check=yes ./bin/memsim -p $(LEVEL) -r $(ADDRFILE) -s $(SWAPFILE) -f $(FCOUNT) -a $(ALGO) -t $(TICK) -o $(OUTFILE)
+leak:
+	@valgrind --leak-check=yes ./bin/memsim -p $(LEVEL) -r $(ADDRFILE) -s $(SWAPFILE) -f $(FCOUNT) -a $(ALGO) -t $(TICK) -o $(OUTFILE)
 
 clean:
-	rm -f ./bin/* $(SWAPFILE)
+	@rm -f ./bin/* $(SWAPFILE)
