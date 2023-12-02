@@ -6,7 +6,7 @@ SFLAGS=-I./src/include
 SIMULATOR=memsim
 LEVEL=2
 ADDRFILE=./in/addrfile
-SWAPFILE=./in/swapfile
+SWAPFILE=swapfile.bin
 FCOUNT=47
 ALGO=FIFO
 TICK=2
@@ -22,3 +22,6 @@ sim-run:
 
 sim-leak:
 	valgrind --leak-check=yes ./bin/memsim -p $(LEVEL) -r $(ADDRFILE) -s $(SWAPFILE) -f $(FCOUNT) -a $(ALGO) -t $(TICK) -o $(OUTFILE)
+
+clean:
+	rm -f ./bin/* $(SWAPFILE)
