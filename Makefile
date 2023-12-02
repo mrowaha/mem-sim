@@ -1,6 +1,7 @@
 CC=gcc
 CFLAGS=-Wall -g
 SFLAGS=-I./src/include
+BUILD_DIR := ./bin
 .DEFAULT_GOAL=all
 
 SIMULATOR=memsim
@@ -25,3 +26,6 @@ leak:
 
 clean:
 	@rm -f ./bin/* $(SWAPFILE)
+
+test-pagetable:
+	gcc ./src/pagetable.c ./tests/pagetabletest.c -o ./bin/pagetabletest -I./src/include -lcriterion
