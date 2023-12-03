@@ -28,4 +28,7 @@ clean:
 	@rm -f ./bin/* $(SWAPFILE)
 
 test-pagetable:
-	gcc ./src/pagetable.c ./tests/pagetabletest.c -o ./bin/pagetabletest -I./src/include -lcriterion
+	@gcc ./src/pagetable.c ./tests/pagetabletest.c -o ./bin/pagetabletest -I./src/include -lcriterion
+
+test-dblpagetable:
+	@gcc ./src/pagetable.c ./tests/dblpagetabletest.c -o ./bin/dblpagetabletest -I./src/include -lcriterion
