@@ -1,32 +1,48 @@
 #include <stdio.h>
 #include "pagetable.h"
 
+// log levels
+// #define ERROR
+#define INFO
+
+#ifdef ERROR
+#define LOG_ERROR(...) fprintf(stderr, ##__VA_ARGS__);
+#else
+#define LOG_ERROR(...) (void)0;
+#endif
+
+#ifdef INFO
+#define LOG_INFO(...) fprintf(stdout, ##__VA_ARGS__);
+#else
+#define LOG_INFO(...) (void)0;
+#endif
+
 // retrieve the idx by extracting the most significant 10 bits in the address
 // this means max virtual page number is 2^10 = 1024 = PAGES
 // takes the virtual address and zero outs the offsets
 // then bit shifts to the right by the length of the offset bits
-#define TYPE_SINGLE(vpt, va, ret)                                                    \
-  singlepagetable *pt = (singlepagetable *)vpt;                                      \
-  uint16_t idx = (va & 0xffc0) >> 6;                                                 \
-  if (idx >= PAGES)                                                                  \
-  {                                                                                  \
-    fprintf(stderr, "[ERROR] page table index cannot be greater than PAGE count\n"); \
-    return ret;                                                                      \
+#define TYPE_SINGLE(vpt, va, ret)                                             \
+  singlepagetable *pt = (singlepagetable *)vpt;                               \
+  uint16_t idx = (va & 0xffc0) >> 6;                                          \
+  if (idx >= PAGES)                                                           \
+  {                                                                           \
+    LOG_ERROR("[ERROR] page table index cannot be greater than PAGE count\n") \
+    return ret;                                                               \
   }
 
-#define TYPE_DOUBLE(vpt, va, ret)                                                  \
-  doublepagetable *pt = (doublepagetable *)vpt;                                    \
-  uint16_t outeridx = (virtualaddr & 0xf800) >> 11;                                \
-  if (outeridx >= 32)                                                              \
-  {                                                                                \
-    fprintf(stderr, "[ERROR] outer page table index cannot be greater than 32\n"); \
-    return ret;                                                                    \
-  }                                                                                \
-  uint16_t inneridx = (virtualaddr & 0x07c0) >> 6;                                 \
-  if (inneridx >= 32)                                                              \
-  {                                                                                \
-    fprintf(stderr, "[ERROR] inner page table index cannot be greater than 32\n"); \
-    return ret;                                                                    \
+#define TYPE_DOUBLE(vpt, va, ret)                                            \
+  doublepagetable *pt = (doublepagetable *)vpt;                              \
+  uint16_t outeridx = (virtualaddr & 0xf800) >> 11;                          \
+  if (outeridx >= 32)                                                        \
+  {                                                                          \
+    LOG_ERROR("[ERROR] outer page table index cannot be greater than 32\n")  \
+    return ret;                                                              \
+  }                                                                          \
+  uint16_t inneridx = (virtualaddr & 0x07c0) >> 6;                           \
+  if (inneridx >= 32)                                                        \
+  {                                                                          \
+    LOG_ERROR("[ERROR] inner page table index cannot be greater than 32\n"); \
+    return ret;                                                              \
   }
 
 // this function initializes the page entries in level one page table to zero
@@ -79,7 +95,7 @@ bool update_framenumber(
 
   if (framenumber > MAX_FRAME_NUMBER)
   {
-    fprintf(stderr, "[ERROR] max frame number can be only 8191\n");
+    LOG_ERROR("[ERROR] max frame number can be only 8191\n")
     return false;
   }
 
@@ -108,11 +124,13 @@ uint16_t get_framenumber(
   if (type == ONE_LEVEL)
   {
     TYPE_SINGLE(vpt, virtualaddr, 0);
+    LOG_INFO("[INFO] page index is %d\n", idx)
     return (uint16_t)(0x1fff & pt->entries[idx]);
   }
   else
   {
     TYPE_DOUBLE(vpt, virtualaddr, 0);
+    LOG_INFO("[INFO] outer page index: %d, inner index: %d\n", outeridx, inneridx);
     return (uint16_t)(0x1fff & pt->pagetables[outeridx][inneridx]);
   }
 }

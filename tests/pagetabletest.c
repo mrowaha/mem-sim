@@ -7,9 +7,21 @@
 
 #include "pagetable.h"
 
+void *pt;
+void setup(void)
+{
+  pt = (void *)newpagetable();
+}
+
+void teardown(void)
+{
+  free(pt);
+}
+
+TestSuite(singlepagetable, .init = setup, .fini = teardown);
+
 Test(singlepagetable, frameinsertion)
 {
-  void *pt = (void *)newpagetable();
   uint16_t framenumber = get_framenumber(ONE_LEVEL, pt, 0);
   cr_assert(framenumber == 0);
 
@@ -28,37 +40,36 @@ Test(singlepagetable, frameinsertion)
   update_framenumber(ONE_LEVEL, pt, 0, 8191);
   framenumber = get_framenumber(ONE_LEVEL, pt, 0);
   cr_assert(framenumber == 8191); // edge case
-  free(pt);
 }
 
 Test(singlepagetable, frameinsertion_multi_index)
 {
-  void *pt = (void *)newpagetable();
-  uint16_t framenumber = get_framenumber(ONE_LEVEL, pt, 0);
-  cr_assert(framenumber == 0);
+  for (uint16_t i = 0; i < PAGES; i++)
+  {
+    uint16_t virtualaddr = i << 6;
+    uint16_t framenumber = get_framenumber(ONE_LEVEL, pt, virtualaddr);
+    cr_assert(framenumber == 0);
 
-  update_framenumber(ONE_LEVEL, pt, 0, 10);
-  framenumber = get_framenumber(ONE_LEVEL, pt, 0);
-  cr_assert(framenumber == 10);
+    update_framenumber(ONE_LEVEL, pt, virtualaddr, 10);
+    framenumber = get_framenumber(ONE_LEVEL, pt, virtualaddr);
+    cr_assert(framenumber == 10);
 
-  update_framenumber(ONE_LEVEL, pt, 2, 20);
-  framenumber = get_framenumber(ONE_LEVEL, pt, 2);
-  cr_assert(framenumber == 20);
+    update_framenumber(ONE_LEVEL, pt, virtualaddr, 20);
+    framenumber = get_framenumber(ONE_LEVEL, pt, virtualaddr);
+    cr_assert(framenumber == 20);
 
-  update_framenumber(ONE_LEVEL, pt, 3, 8192);
-  framenumber = get_framenumber(ONE_LEVEL, pt, 3);
-  cr_assert(framenumber == 20); // remains unchanged
+    update_framenumber(ONE_LEVEL, pt, virtualaddr, 8192);
+    framenumber = get_framenumber(ONE_LEVEL, pt, virtualaddr);
+    cr_assert(framenumber == 20); // remains unchanged
 
-  update_framenumber(ONE_LEVEL, pt, 3, 8191);
-  framenumber = get_framenumber(ONE_LEVEL, pt, 3);
-  cr_assert(framenumber == 8191); // edge case
-
-  free(pt);
+    update_framenumber(ONE_LEVEL, pt, virtualaddr, 8191);
+    framenumber = get_framenumber(ONE_LEVEL, pt, virtualaddr);
+    cr_assert(framenumber == 8191); // edge case
+  }
 }
 
 Test(singlepagetable, metabits)
 {
-  void *pt = (void *)newpagetable();
   cr_assert(isvalid_pte(ONE_LEVEL, pt, 0) == false);
   cr_assert(isreferenced_pte(ONE_LEVEL, pt, 0) == false);
   cr_assert(ismodified_pte(ONE_LEVEL, pt, 0) == false);
@@ -107,13 +118,10 @@ Test(singlepagetable, metabits)
   cr_assert(isvalid_pte(ONE_LEVEL, pt, 0) == false);
   cr_assert(isreferenced_pte(ONE_LEVEL, pt, 0) == false);
   cr_assert(ismodified_pte(ONE_LEVEL, pt, 0) == false);
-
-  free(pt);
 }
 
-Test(singlepagetable, metabits_indexone)
+Test(singlepagetable, metabits_multi_index)
 {
-  void *pt = (void *)newpagetable();
   for (int i = 0; i < PAGES; i++)
   {
     cr_assert(isvalid_pte(ONE_LEVEL, pt, i) == false);
@@ -165,5 +173,4 @@ Test(singlepagetable, metabits_indexone)
     cr_assert(isreferenced_pte(ONE_LEVEL, pt, i) == false);
     cr_assert(ismodified_pte(ONE_LEVEL, pt, i) == false);
   }
-  free(pt);
 }
