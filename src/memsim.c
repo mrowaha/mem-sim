@@ -76,6 +76,9 @@ memsim *new_memsim(
   case CLOCK:
     simulator->structure = (void *)new_clock(fcount);
     break;
+  case ECLOCK:
+    simulator->structure = (void *)new_eclock(fcount);
+    break;
   default:
     fprintf(stderr, "[ERROR] invalid algorithm type: %d\n", algo);
     free(simulator);
@@ -376,6 +379,20 @@ void free_memsim(memsim *simulator)
     free_swapspace(&(simulator->ss));
     free(simulator->pagetable);
     free(simulator->memory);
+    switch (simulator->algo)
+    {
+    case FIFO:
+      free_fifo((fifo *)simulator->structure);
+      break;
+    case CLOCK:
+      free_clock((clock *)simulator->structure);
+      break;
+    case ECLOCK:
+      free_eclock((eclock *)simulator->structure);
+      break;
+    case LRU:
+      break;
+    }
     free(simulator);
   }
 }

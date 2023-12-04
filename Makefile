@@ -9,7 +9,7 @@ LEVEL=1
 ADDRFILE=infile.txt
 SWAPFILE=swapfile.bin
 FCOUNT=4
-ALGO=FIFO
+ALGO=ECLOCK
 TICK=2
 OUTFILE=outfile.txt
 
