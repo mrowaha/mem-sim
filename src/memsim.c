@@ -74,10 +74,13 @@ memsim *new_memsim(
     simulator->structure = (void *)new_fifo(fcount);
     break;
   case CLOCK:
-    simulator->structure = (void *)new_clock(fcount);
+    simulator->structure = (void *)new_sclock(fcount);
     break;
   case ECLOCK:
     simulator->structure = (void *)new_eclock(fcount);
+    break;
+  case LRU:
+    simulator->structure = (void *)new_lru(fcount);
     break;
   default:
     fprintf(stderr, "[ERROR] invalid algorithm type: %d\n", algo);
@@ -192,6 +195,10 @@ void read_source(memsim *simulator, const char *inputfile, const int tick)
         page *frame = &(simulator->memory[framenumber]);
         frame->content[offset] = value;
         write_log(simulator, virtualaddr, framenumber, false);
+        if (simulator->algo == LRU)
+        {
+          update_referencedtime((lru *)simulator->structure, virtualaddr);
+        }
       }
       else
       {
@@ -271,6 +278,10 @@ void read_source(memsim *simulator, const char *inputfile, const int tick)
         set_referencedpte(simulator->type, simulator->pagetable, virtualaddr);
         uint16_t framenumber = get_framenumber(simulator->type, simulator->pagetable, virtualaddr);
         write_log(simulator, virtualaddr, framenumber, false);
+        if (simulator->algo == LRU)
+        {
+          update_referencedtime((lru *)simulator->structure, virtualaddr);
+        }
       }
       else
       {
@@ -385,12 +396,13 @@ void free_memsim(memsim *simulator)
       free_fifo((fifo *)simulator->structure);
       break;
     case CLOCK:
-      free_clock((clock *)simulator->structure);
+      free_sclock((sclock *)simulator->structure);
       break;
     case ECLOCK:
       free_eclock((eclock *)simulator->structure);
       break;
     case LRU:
+      free_lru((lru *)simulator->structure);
       break;
     }
     free(simulator);

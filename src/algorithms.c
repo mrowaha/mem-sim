@@ -38,7 +38,7 @@ void insert_pte_fifo(fifo *list, node *newnode)
   }
 }
 
-void insert_pte_clock(clock *list, node *newnode)
+void insert_pte_sclock(sclock *list, node *newnode)
 {
   if (list->head == NULL)
   {
@@ -88,6 +88,32 @@ void insert_pte_eclock(eclock *list, node *newnode)
   }
 }
 
+void insert_pte_lru(lru *list, node *newnode)
+{
+  newnode->lastreferenced = (double)(clock() - list->start);
+  if (list->head == NULL)
+  {
+    list->head = newnode;
+    list->head->next = NULL;
+  }
+  else
+  {
+    // if all the frames have been assigned
+    // evict the node at the head
+    node *curr = list->head, *prev = NULL;
+    while (curr != NULL)
+    {
+      // append to end
+      prev = curr;
+      curr = curr->next;
+    }
+    prev->next = newnode;
+    newnode->next = NULL;
+    // if evict was flagged, return the head node
+    list->size++;
+  }
+}
+
 fifo *new_fifo(int fcount)
 {
   fifo *pte_fifo = (fifo *)malloc(sizeof(fifo));
@@ -109,16 +135,16 @@ void free_fifo(fifo *structure)
   }
 }
 
-clock *new_clock(int fcount)
+sclock *new_sclock(int fcount)
 {
-  clock *pte_clock = (clock *)malloc(sizeof(clock));
+  sclock *pte_clock = (sclock *)malloc(sizeof(sclock));
   pte_clock->framecount = fcount;
   pte_clock->size = 0;
   pte_clock->head = NULL;
   return pte_clock;
 }
 
-void free_clock(clock *structure)
+void free_sclock(sclock *structure)
 {
   if (structure)
   {
@@ -151,32 +177,47 @@ void free_eclock(eclock *structure)
   }
 }
 
+lru *new_lru(int fcount)
+{
+  lru *pte_lru = (lru *)malloc(sizeof(lru));
+  pte_lru->framecount = fcount;
+  pte_lru->size = 0;
+  pte_lru->head = NULL;
+  pte_lru->start = clock();
+  return pte_lru;
+}
+
+void free_lru(lru *structure)
+{
+  if (structure)
+  {
+    if (structure->head)
+    {
+      free_node(structure->head);
+    }
+    free(structure);
+  }
+}
+
 void insert_pte(ALGO algo, void *structure, pagetableentry *pte, page *frame, uint16_t va)
 {
   node *newnode;
+  newnode = (node *)malloc(sizeof(node));
+  newnode->frame = frame;
+  newnode->pte = pte;
+  newnode->virtualaddr = va;
   switch (algo)
   {
   case FIFO:
-    newnode = (node *)malloc(sizeof(node));
-    newnode->frame = frame;
-    newnode->pte = pte;
-    newnode->virtualaddr = va;
     insert_pte_fifo((fifo *)structure, newnode);
     return;
   case LRU:
+    insert_pte_lru((lru *)structure, newnode);
     return;
   case CLOCK:
-    newnode = (node *)malloc(sizeof(node));
-    newnode->frame = frame;
-    newnode->pte = pte;
-    newnode->virtualaddr = va;
-    insert_pte_clock((clock *)structure, newnode);
+    insert_pte_sclock((sclock *)structure, newnode);
     return;
   case ECLOCK:
-    newnode = (node *)malloc(sizeof(node));
-    newnode->frame = frame;
-    newnode->pte = pte;
-    newnode->virtualaddr = va;
     insert_pte_eclock((eclock *)structure, newnode);
     return;
   default:
@@ -196,9 +237,30 @@ node *evict_node(ALGO algo, void *structure)
     evictednode->next = NULL;
     return evictednode;
   case LRU:
-    return NULL;
+    lru *lrulist = (lru *)structure;
+    curr = lrulist->head;
+    prev = NULL;
+    node *leastrecentlyused = curr;
+    while (curr != NULL)
+    {
+      prev = curr;
+      curr = curr->next;
+      if (curr != NULL && leastrecentlyused->lastreferenced < curr->lastreferenced)
+      {
+        leastrecentlyused = curr;
+      }
+    }
+    if (leastrecentlyused == lrulist->head)
+    {
+      lrulist->head = lrulist->head->next;
+    }
+    else
+    {
+      prev->next = leastrecentlyused->next;
+    }
+    return leastrecentlyused;
   case CLOCK:
-    clock *clocklist = (clock *)structure;
+    sclock *clocklist = (sclock *)structure;
     // cycle through the underlying fifo and give each a second chance
     curr = clocklist->head;
     prev = NULL;
@@ -275,5 +337,19 @@ node *evict_node(ALGO algo, void *structure)
     return curr;
   default:
     return NULL;
+  }
+}
+
+void update_referencedtime(lru *list, uint16_t virtualaddr)
+{
+  node *curr = list->head;
+  while (curr != NULL)
+  {
+    if (curr->virtualaddr == virtualaddr)
+    {
+      curr->lastreferenced = (double)(clock() - list->start);
+      return;
+    }
+    curr = curr->next;
   }
 }

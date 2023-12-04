@@ -1,6 +1,8 @@
 #ifndef FIFO_H
 #define FIFO_H
 
+#include <time.h>
+
 #include "pagetable.h"
 #include "memsimarg.h"
 
@@ -10,6 +12,7 @@ typedef struct node
   page *frame;
   uint16_t virtualaddr;
   struct node *next;
+  double lastreferenced;
 } node;
 
 typedef struct fifo
@@ -23,16 +26,16 @@ fifo *new_fifo(int fcount);
 
 void free_fifo(fifo *);
 
-typedef struct clock
+typedef struct sclock
 {
   int size;
   int framecount;
   node *head;
-} clock;
+} sclock;
 
-clock *new_clock(int fcount);
+sclock *new_sclock(int fcount);
 
-void free_clock(clock *);
+void free_sclock(sclock *);
 
 typedef struct eclock
 {
@@ -44,6 +47,20 @@ typedef struct eclock
 eclock *new_eclock(int fcount);
 
 void free_eclock(eclock *);
+
+typedef struct lru
+{
+  int size;
+  int framecount;
+  node *head;
+  clock_t start;
+} lru;
+
+lru *new_lru(int fcount);
+
+void free_lru(lru *);
+
+void update_referencedtime(lru *, uint16_t virtualaddr);
 
 void insert_pte(ALGO algo, void *structure, pagetableentry *, page *, uint16_t va);
 
