@@ -73,6 +73,9 @@ memsim *new_memsim(
   case FIFO:
     simulator->structure = (void *)new_fifo(fcount);
     break;
+  case CLOCK:
+    simulator->structure = (void *)new_clock(fcount);
+    break;
   default:
     fprintf(stderr, "[ERROR] invalid algorithm type: %d\n", algo);
     free(simulator);
@@ -92,6 +95,11 @@ memsim *new_memsim(
       free(simulator);
       return NULL;
     }
+  }
+  else
+  {
+    // assign without validation
+    simulator->ss = newss.ss;
   }
 
   simulator->outfile = fopen(outfile, "w");
@@ -203,7 +211,7 @@ void read_source(memsim *simulator, const char *inputfile)
         }
         else
         {
-          node *evicted_page = to_be_evicted(
+          node *evicted_page = evict_node(
               simulator->algo,
               simulator->structure);
           uint16_t framenumber = get_framenumber(simulator->algo, simulator->pagetable, evicted_page->virtualaddr);
@@ -278,7 +286,7 @@ void read_source(memsim *simulator, const char *inputfile)
         }
         else
         {
-          node *evicted_page = to_be_evicted(
+          node *evicted_page = evict_node(
               simulator->algo,
               simulator->structure);
           uint16_t framenumber = get_framenumber(simulator->algo, simulator->pagetable, evicted_page->virtualaddr);
