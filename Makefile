@@ -6,12 +6,12 @@ BUILD_DIR := ./bin
 
 SIMULATOR=memsim
 LEVEL=2
-ADDRFILE=./in/addrfile
+ADDRFILE=infile.txt
 SWAPFILE=swapfile.bin
 FCOUNT=47
 ALGO=FIFO
 TICK=2
-OUTFILE=./out/outfile
+OUTFILE=outfile.txt
 
 all: clean build run
  

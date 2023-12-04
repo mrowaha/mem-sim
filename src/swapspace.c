@@ -120,19 +120,17 @@ void free_swapspace(swapspace **ss)
   }
 }
 
-page *get_page(const swapspace *ss, const int idx)
+page *get_pagecpy(const swapspace *ss, const int idx)
 {
-  return NULL;
+  page *pagecpy = (page *)malloc(sizeof(page));
+  memcpy(pagecpy, ss->memorymap + idx, sizeof(page));
+  return pagecpy;
 }
 
 bool write_page(swapspace *ss, const int idx, const page *pg)
 {
-  return false;
-}
-
-void walk_swapspace(const swapspace *ss)
-{
-  printf("size of the file: %zu\n", ss->size);
+  memcpy(ss->memorymap + idx, pg, sizeof(page));
+  return true;
 }
 
 bool validate_newswapspace(const swapspace *ss)

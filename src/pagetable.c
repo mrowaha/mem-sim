@@ -3,7 +3,7 @@
 
 // log levels
 // #define ERROR
-#define INFO
+// #define INFO
 
 #ifdef ERROR
 #define LOG_ERROR(...) fprintf(stderr, ##__VA_ARGS__);
@@ -292,5 +292,19 @@ bool ismodified_pte(
   {
     TYPE_DOUBLE(vpt, virtualaddr, false);
     return GET_MODIFY_BIT(pt->pagetables[outeridx][inneridx]);
+  }
+}
+
+pagetableentry *get_pte_reference(enum PAGETABLE type, void *vpt, const uint16_t virtualaddr)
+{
+  if (type == ONE_LEVEL)
+  {
+    TYPE_SINGLE(vpt, virtualaddr, NULL);
+    return pt->entries + idx;
+  }
+  else
+  {
+    TYPE_DOUBLE(vpt, virtualaddr, NULL);
+    return pt->pagetables[outeridx] + inneridx;
   }
 }

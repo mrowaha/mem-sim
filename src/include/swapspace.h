@@ -13,7 +13,7 @@
 
 typedef struct page
 {
-  int8_t content[PAGESIZE];
+  uint8_t content[PAGESIZE];
 } page;
 
 page new_page(void);
@@ -44,7 +44,7 @@ newswapspace new_swapspace(char *filename);
 
 void free_swapspace(swapspace **);
 
-page *get_page(const swapspace *, const int idx);
+page *get_pagecpy(const swapspace *, const int idx);
 
 bool write_page(swapspace *, const int idx, const page *);
 

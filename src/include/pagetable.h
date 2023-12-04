@@ -68,6 +68,8 @@ typedef struct doublepagetable
 
 doublepagetable *newdblpagetable(void);
 
+pagetableentry *get_pte_reference(enum PAGETABLE type, void *table, const uint16_t virtualaddr);
+
 bool update_framenumber(enum PAGETABLE type, void *table, const uint16_t virtualaddr, const uint16_t framenumber);
 
 uint16_t get_framenumber(enum PAGETABLE type, const void *table, const uint16_t virtuaddr);
