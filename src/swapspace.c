@@ -44,7 +44,6 @@ newswapspace new_swapspace(char *filename)
 {
   newswapspace invalidreturn = {.isnew = false, .ss = NULL};
   // validate filename length
-  printf("string length: %ld\n", strlen(filename));
   if (strlen(filename) >= 64)
   {
     fprintf(stderr, "new_swapspace: filename cannot be longer than 63 characters");

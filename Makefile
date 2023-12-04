@@ -5,10 +5,10 @@ BUILD_DIR := ./bin
 .DEFAULT_GOAL=all
 
 SIMULATOR=memsim
-LEVEL=2
+LEVEL=1
 ADDRFILE=infile.txt
 SWAPFILE=swapfile.bin
-FCOUNT=47
+FCOUNT=10
 ALGO=FIFO
 TICK=2
 OUTFILE=outfile.txt

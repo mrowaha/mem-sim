@@ -29,5 +29,5 @@ int main(const int argc, const char *argv[])
   free_memsim(simulator);
 exit:
   free_cmdargs(process_args);
-  return EXIT_SUCCESS;
+  exit(EXIT_FAILURE);
 }

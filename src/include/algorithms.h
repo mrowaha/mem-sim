@@ -21,8 +21,17 @@ typedef struct fifo
 
 fifo *new_fifo(int fcount);
 
-node *insert_pte(ALGO algo, void *structure, pagetableentry *, page *, uint16_t va);
+typedef struct clock
+{
+  int size;
+  int framecount;
+  node *head;
+} clock;
 
-node *to_be_evicted(ALGO algo, void *structure);
+clock *new_clock(int fcount);
+
+void insert_pte(ALGO algo, void *structure, pagetableentry *, page *, uint16_t va);
+
+node *evict_node(ALGO algo, void *structure);
 
 #endif

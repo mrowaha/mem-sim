@@ -330,7 +330,17 @@ void free_memsim(memsim *simulator)
 {
   if (simulator)
   {
-    printf("freeing");
+    if (simulator->type == TWO_LEVEL)
+    {
+      doublepagetable *temp = (doublepagetable *)(simulator->pagetable);
+      for (int i = 0; i < temp->maxouttable; i++)
+      {
+        if (temp->pagetables[i] != NULL)
+        {
+          free(temp->pagetables[i]);
+        }
+      }
+    }
     free_swapspace(&(simulator->ss));
     free(simulator->pagetable);
     free(simulator->memory);
