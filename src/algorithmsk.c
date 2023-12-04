@@ -512,11 +512,13 @@ struct pagereplacement run_pagereplacement_lru(lru *lrulist, uint16_t virtualadd
 #endif
     lrulist->head = (algonode *)malloc(sizeof(algonode));
     init_algonode(&(lrulist->head), pte_ref, (virtualaddr & 0xffc0), lrulist->currsize, NULL);
+    lrulist->head->lastreferenced = (double)(clock() - lrulist->start);
     returnedstruct.inmemoryoffset = lrulist->currsize;
   }
   else
   {
     algonode *tobe_pagedin = (algonode *)malloc(sizeof(algonode));
+    tobe_pagedin->lastreferenced = (double)(clock() - lrulist->start);
     // perform an append first
     algonode *curr = lrulist->head, *prev = NULL;
     while (curr != NULL)
@@ -532,55 +534,29 @@ struct pagereplacement run_pagereplacement_lru(lru *lrulist, uint16_t virtualadd
     if (evict)
     {
       algonode *innercurr, *innerprev;
-      int step = 1;
-      bool found = false;
-    cycle:
       innercurr = lrulist->head;
       innerprev = NULL;
+      algonode *leastrecentlyused = innercurr;
       while (innercurr != NULL)
       {
-        bool isreferenced = isreferenced_pte(lrulist->type, lrulist->vpt, innercurr->msb_virtualaddr);
-        bool ismodified = ismodified_pte(lrulist->type, lrulist->vpt, innercurr->msb_virtualaddr);
-        if (step == 1 || step == 3)
+        if (leastrecentlyused->lastreferenced > innercurr->lastreferenced)
         {
-          if (!isreferenced && !ismodified)
-          {
-            found = true;
-            break;
-          }
-        }
-        else if (step == 2 || step == 4)
-        {
-          if (!isreferenced && ismodified)
-          {
-            found = true;
-            break;
-          }
-          if (step == 2)
-          {
-            unset_referencedpte(lrulist->type, lrulist->head, innercurr->msb_virtualaddr);
-          }
+          leastrecentlyused = innercurr;
         }
         innerprev = innercurr;
         innercurr = innercurr->next;
       }
-      step++;
-      if (step != 5 && !found)
-      {
-        goto cycle;
-      }
 
-      // remove the curr
-      if (innerprev == NULL)
+      if (leastrecentlyused == lrulist->head)
       {
-        lrulist->head = innercurr->next;
+        lrulist->head = lrulist->head->next;
       }
       else
       {
-        innerprev->next = innercurr->next;
+        innerprev->next = leastrecentlyused->next;
       }
 
-      tobe_evicted = innercurr;
+      tobe_evicted = leastrecentlyused;
 
 #ifdef MEMSIM_ASSERTIONS
       assert(tobe_evicted != NULL);
