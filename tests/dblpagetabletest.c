@@ -15,6 +15,14 @@ void setup(void)
 
 void teardown(void)
 {
+  doublepagetable *temp = (doublepagetable *)pt;
+  for (int i = 0; i < temp->maxouttable; i++)
+  {
+    if (temp->pagetables[i] != NULL)
+    {
+      free(temp->pagetables[i]);
+    }
+  }
   free(pt);
 }
 
@@ -172,5 +180,33 @@ Test(doublepagetable, metabits_multi_index)
     cr_assert(isvalid_pte(TWO_LEVEL, pt, i) == false);
     cr_assert(isreferenced_pte(TWO_LEVEL, pt, i) == false);
     cr_assert(ismodified_pte(TWO_LEVEL, pt, i) == false);
+  }
+}
+
+Test(doublepagetable, pte_reference)
+{
+  for (uint16_t i = 0; i < PAGES; i++)
+  {
+    uint16_t virtualaddr = i << 6;
+    pagetableentry *pte_ref = get_pte_reference(TWO_LEVEL, pt, virtualaddr);
+    // should be modifiable
+    // check using pagetable bitwise macros
+    bool result = (bool)(GET_VALID_BIT((*pte_ref)));
+    cr_assert(result == false);
+    *pte_ref = SET_VALID_BIT((*pte_ref));
+    result = (bool)(GET_VALID_BIT((*pte_ref)));
+    cr_assert(result == true);
+
+    // check if this change is reflected in the page table
+    cr_assert(isvalid_pte(TWO_LEVEL, pt, virtualaddr) == true);
+
+    // check reverse reflection
+    unset_validpte(TWO_LEVEL, pt, virtualaddr);
+    result = (bool)(GET_VALID_BIT((*pte_ref)));
+    cr_assert(result == false);
+
+    set_referencedpte(TWO_LEVEL, pt, virtualaddr);
+    result = (bool)(GET_REFERENCE_BIT(*pte_ref));
+    cr_assert(result == true);
   }
 }

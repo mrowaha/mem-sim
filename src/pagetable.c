@@ -30,19 +30,28 @@
     return ret;                                                               \
   }
 
-#define TYPE_DOUBLE(vpt, va, ret)                                            \
-  doublepagetable *pt = (doublepagetable *)vpt;                              \
-  uint16_t outeridx = (virtualaddr & 0xf800) >> 11;                          \
-  if (outeridx >= 32)                                                        \
-  {                                                                          \
-    LOG_ERROR("[ERROR] outer page table index cannot be greater than 32\n")  \
-    return ret;                                                              \
-  }                                                                          \
-  uint16_t inneridx = (virtualaddr & 0x07c0) >> 6;                           \
-  if (inneridx >= 32)                                                        \
-  {                                                                          \
-    LOG_ERROR("[ERROR] inner page table index cannot be greater than 32\n"); \
-    return ret;                                                              \
+#define TYPE_DOUBLE(vpt, va, ret)                                                        \
+  doublepagetable *pt = (doublepagetable *)vpt;                                          \
+  uint16_t outeridx = (virtualaddr & 0xf800) >> 11;                                      \
+  if (outeridx >= 32)                                                                    \
+  {                                                                                      \
+    LOG_ERROR("[ERROR] outer page table index cannot be greater than 32\n")              \
+    return ret;                                                                          \
+  }                                                                                      \
+  uint16_t inneridx = (virtualaddr & 0x07c0) >> 6;                                       \
+  if (inneridx >= 32)                                                                    \
+  {                                                                                      \
+    LOG_ERROR("[ERROR] inner page table index cannot be greater than 32\n");             \
+    return ret;                                                                          \
+  }                                                                                      \
+  if (pt->pagetables[outeridx] == NULL)                                                  \
+  {                                                                                      \
+    pagetableentry *newinnertbl = (pagetableentry *)malloc(sizeof(pagetableentry) * 32); \
+    for (int i = 0; i < 32; i++)                                                         \
+    {                                                                                    \
+      newinnertbl[i] = (pagetableentry)0;                                                \
+    }                                                                                    \
+    pt->pagetables[outeridx] = newinnertbl;                                              \
   }
 
 // this function initializes the page entries in level one page table to zero
@@ -71,18 +80,20 @@ void init_pagetable(singlepagetable *pt)
 doublepagetable *newdblpagetable(void)
 {
   doublepagetable *pt = (doublepagetable *)malloc(sizeof(doublepagetable));
+  pt->maxouttable = 32;
   init_dblpagetable(pt);
   return pt;
 }
 
 void init_dblpagetable(doublepagetable *pt)
 {
-  for (int i = 0; i < 32; i++)
+  for (int i = 0; i < pt->maxouttable; i++)
   {
-    for (int j = 0; j < 32; j++)
-    {
-      pt->pagetables[i][j] = (pagetableentry)0;
-    }
+    // for (int j = 0; j < 32; j++)
+    // {
+    //   pt->pagetables[i][j] = (pagetableentry)0;
+    // }
+    pt->pagetables[i] = NULL; // initial no page tables have been loaded
   }
 }
 

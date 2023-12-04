@@ -122,55 +122,84 @@ Test(singlepagetable, metabits)
 
 Test(singlepagetable, metabits_multi_index)
 {
-  for (int i = 0; i < PAGES; i++)
+  for (uint16_t i = 0; i < PAGES; i++)
   {
-    cr_assert(isvalid_pte(ONE_LEVEL, pt, i) == false);
-    cr_assert(isreferenced_pte(ONE_LEVEL, pt, i) == false);
-    cr_assert(ismodified_pte(ONE_LEVEL, pt, i) == false);
+    uint16_t virtualaddr = i << 6;
+    cr_assert(isvalid_pte(ONE_LEVEL, pt, virtualaddr) == false);
+    cr_assert(isreferenced_pte(ONE_LEVEL, pt, virtualaddr) == false);
+    cr_assert(ismodified_pte(ONE_LEVEL, pt, virtualaddr) == false);
 
-    set_validpte(ONE_LEVEL, pt, i);
-    cr_assert(isvalid_pte(ONE_LEVEL, pt, i) == true, "value of i: %d\n", i);
-    cr_assert(isreferenced_pte(ONE_LEVEL, pt, i) == false);
-    cr_assert(ismodified_pte(ONE_LEVEL, pt, i) == false);
+    set_validpte(ONE_LEVEL, pt, virtualaddr);
+    cr_assert(isvalid_pte(ONE_LEVEL, pt, virtualaddr) == true, "value of i: %d\n", i);
+    cr_assert(isreferenced_pte(ONE_LEVEL, pt, virtualaddr) == false);
+    cr_assert(ismodified_pte(ONE_LEVEL, pt, virtualaddr) == false);
 
-    unset_validpte(ONE_LEVEL, pt, i);
-    cr_assert(isvalid_pte(ONE_LEVEL, pt, i) == false);
-    cr_assert(isreferenced_pte(ONE_LEVEL, pt, i) == false);
-    cr_assert(ismodified_pte(ONE_LEVEL, pt, i) == false);
+    unset_validpte(ONE_LEVEL, pt, virtualaddr);
+    cr_assert(isvalid_pte(ONE_LEVEL, pt, virtualaddr) == false);
+    cr_assert(isreferenced_pte(ONE_LEVEL, pt, virtualaddr) == false);
+    cr_assert(ismodified_pte(ONE_LEVEL, pt, virtualaddr) == false);
 
-    set_referencedpte(ONE_LEVEL, pt, i);
-    cr_assert(isvalid_pte(ONE_LEVEL, pt, i) == false);
-    cr_assert(isreferenced_pte(ONE_LEVEL, pt, i) == true);
-    cr_assert(ismodified_pte(ONE_LEVEL, pt, i) == false);
+    set_referencedpte(ONE_LEVEL, pt, virtualaddr);
+    cr_assert(isvalid_pte(ONE_LEVEL, pt, virtualaddr) == false);
+    cr_assert(isreferenced_pte(ONE_LEVEL, pt, virtualaddr) == true);
+    cr_assert(ismodified_pte(ONE_LEVEL, pt, virtualaddr) == false);
 
-    unset_modifiedpte(ONE_LEVEL, pt, i);
-    cr_assert(isvalid_pte(ONE_LEVEL, pt, i) == false);
-    cr_assert(isreferenced_pte(ONE_LEVEL, pt, i) == true);
-    cr_assert(ismodified_pte(ONE_LEVEL, pt, i) == false);
+    unset_modifiedpte(ONE_LEVEL, pt, virtualaddr);
+    cr_assert(isvalid_pte(ONE_LEVEL, pt, virtualaddr) == false);
+    cr_assert(isreferenced_pte(ONE_LEVEL, pt, virtualaddr) == true);
+    cr_assert(ismodified_pte(ONE_LEVEL, pt, virtualaddr) == false);
 
-    set_modifiedpte(ONE_LEVEL, pt, i);
-    cr_assert(isvalid_pte(ONE_LEVEL, pt, i) == false);
-    cr_assert(isreferenced_pte(ONE_LEVEL, pt, i) == true);
-    cr_assert(ismodified_pte(ONE_LEVEL, pt, i) == true);
+    set_modifiedpte(ONE_LEVEL, pt, virtualaddr);
+    cr_assert(isvalid_pte(ONE_LEVEL, pt, virtualaddr) == false);
+    cr_assert(isreferenced_pte(ONE_LEVEL, pt, virtualaddr) == true);
+    cr_assert(ismodified_pte(ONE_LEVEL, pt, virtualaddr) == true);
 
-    set_validpte(ONE_LEVEL, pt, i);
-    cr_assert(isvalid_pte(ONE_LEVEL, pt, i) == true);
-    cr_assert(isreferenced_pte(ONE_LEVEL, pt, i) == true);
-    cr_assert(ismodified_pte(ONE_LEVEL, pt, i) == true);
+    set_validpte(ONE_LEVEL, pt, virtualaddr);
+    cr_assert(isvalid_pte(ONE_LEVEL, pt, virtualaddr) == true);
+    cr_assert(isreferenced_pte(ONE_LEVEL, pt, virtualaddr) == true);
+    cr_assert(ismodified_pte(ONE_LEVEL, pt, virtualaddr) == true);
 
-    unset_referencedpte(ONE_LEVEL, pt, i);
-    cr_assert(isvalid_pte(ONE_LEVEL, pt, i) == true);
-    cr_assert(isreferenced_pte(ONE_LEVEL, pt, i) == false);
-    cr_assert(ismodified_pte(ONE_LEVEL, pt, i) == true);
+    unset_referencedpte(ONE_LEVEL, pt, virtualaddr);
+    cr_assert(isvalid_pte(ONE_LEVEL, pt, virtualaddr) == true);
+    cr_assert(isreferenced_pte(ONE_LEVEL, pt, virtualaddr) == false);
+    cr_assert(ismodified_pte(ONE_LEVEL, pt, virtualaddr) == true);
 
-    unset_modifiedpte(ONE_LEVEL, pt, i);
-    cr_assert(isvalid_pte(ONE_LEVEL, pt, i) == true);
-    cr_assert(isreferenced_pte(ONE_LEVEL, pt, i) == false);
-    cr_assert(ismodified_pte(ONE_LEVEL, pt, i) == false);
+    unset_modifiedpte(ONE_LEVEL, pt, virtualaddr);
+    cr_assert(isvalid_pte(ONE_LEVEL, pt, virtualaddr) == true);
+    cr_assert(isreferenced_pte(ONE_LEVEL, pt, virtualaddr) == false);
+    cr_assert(ismodified_pte(ONE_LEVEL, pt, virtualaddr) == false);
 
-    unset_validpte(ONE_LEVEL, pt, i);
-    cr_assert(isvalid_pte(ONE_LEVEL, pt, i) == false);
-    cr_assert(isreferenced_pte(ONE_LEVEL, pt, i) == false);
-    cr_assert(ismodified_pte(ONE_LEVEL, pt, i) == false);
+    unset_validpte(ONE_LEVEL, pt, virtualaddr);
+    cr_assert(isvalid_pte(ONE_LEVEL, pt, virtualaddr) == false);
+    cr_assert(isreferenced_pte(ONE_LEVEL, pt, virtualaddr) == false);
+    cr_assert(ismodified_pte(ONE_LEVEL, pt, virtualaddr) == false);
+  }
+}
+
+Test(singlepagetable, pte_reference)
+{
+  for (uint16_t i = 0; i < PAGES; i++)
+  {
+    uint16_t virtualaddr = i << 6;
+    pagetableentry *pte_ref = get_pte_reference(ONE_LEVEL, pt, virtualaddr);
+    // should be modifiable
+    // check using pagetable bitwise macros
+    bool result = (bool)(GET_VALID_BIT((*pte_ref)));
+    cr_assert(result == false);
+    *pte_ref = SET_VALID_BIT((*pte_ref));
+    result = (bool)(GET_VALID_BIT((*pte_ref)));
+    cr_assert(result == true);
+
+    // check if this change is reflected in the page table
+    cr_assert(isvalid_pte(ONE_LEVEL, pt, virtualaddr) == true);
+
+    // check reverse reflection
+    unset_validpte(ONE_LEVEL, pt, virtualaddr);
+    result = (bool)(GET_VALID_BIT((*pte_ref)));
+    cr_assert(result == false);
+
+    set_referencedpte(ONE_LEVEL, pt, virtualaddr);
+    result = (bool)(GET_REFERENCE_BIT(*pte_ref));
+    cr_assert(result == true);
   }
 }

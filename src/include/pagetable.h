@@ -63,7 +63,9 @@ singlepagetable *newpagetable(void);
 
 typedef struct doublepagetable
 {
-  pagetableentry pagetables[32][32];
+  int maxouttable;
+  // pagetableentry pagetables[32][32];
+  pagetableentry *pagetables[32];
 } doublepagetable;
 
 doublepagetable *newdblpagetable(void);
