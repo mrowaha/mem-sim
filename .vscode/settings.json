@@ -1,5 +1,6 @@
 {
   "files.associations": {
-    "memsimarg.h": "c"
+    "memsimarg.h": "c",
+    "memsimk.h": "c"
   }
 }

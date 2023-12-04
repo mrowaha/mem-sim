@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "memsim.h"
+#include "memsimk.h"
 #include "memsimarg.h"
 
 cmd_args *process_args;
@@ -26,7 +26,7 @@ int main(const int argc, const char *argv[])
       process_args->algo);
 
   read_source(simulator, process_args->addrfile, process_args->tick);
-  free_memsim(simulator);
+  printf("DONE\n");
 exit:
   free_cmdargs(process_args);
   exit(EXIT_FAILURE);

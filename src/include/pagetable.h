@@ -46,11 +46,11 @@
  */
 typedef uint16_t pagetableentry;
 
-enum PAGETABLE
+typedef enum PAGETABLE
 {
   ONE_LEVEL,
   TWO_LEVEL
-};
+} PAGETABLE;
 
 typedef struct singlepagetable
 {

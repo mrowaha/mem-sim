@@ -90,6 +90,8 @@ void insert_pte_eclock(eclock *list, node *newnode)
 
 void insert_pte_lru(lru *list, node *newnode)
 {
+  printf("here 7.1\n");
+  fflush(stdout);
   newnode->lastreferenced = (double)(clock() - list->start);
   if (list->head == NULL)
   {
@@ -98,20 +100,19 @@ void insert_pte_lru(lru *list, node *newnode)
   }
   else
   {
-    // if all the frames have been assigned
-    // evict the node at the head
     node *curr = list->head, *prev = NULL;
     while (curr != NULL)
     {
-      // append to end
+      printf("{ va: %#x, next: %p\n }", curr->virtualaddr, (void *)(curr->next));
       prev = curr;
       curr = curr->next;
     }
     prev->next = newnode;
     newnode->next = NULL;
-    // if evict was flagged, return the head node
     list->size++;
   }
+  printf("here 7.2\n");
+  fflush(stdout);
 }
 
 fifo *new_fifo(int fcount)
@@ -212,7 +213,11 @@ void insert_pte(ALGO algo, void *structure, pagetableentry *pte, page *frame, ui
     insert_pte_fifo((fifo *)structure, newnode);
     return;
   case LRU:
+    printf("here 7\n");
+    fflush(stdout);
     insert_pte_lru((lru *)structure, newnode);
+    printf("here 8\n");
+    fflush(stdout);
     return;
   case CLOCK:
     insert_pte_sclock((sclock *)structure, newnode);
@@ -290,9 +295,11 @@ node *evict_node(ALGO algo, void *structure)
   case ECLOCK:
     eclock *eclocklist = (eclock *)structure;
     int step = 1;
+    bool found = false;
   cycle:
     curr = eclocklist->head;
     prev = NULL;
+    found = false;
     while (curr != NULL)
     {
       bool isreferenced = (bool)(GET_REFERENCE_BIT((*(curr->pte))));
@@ -302,6 +309,7 @@ node *evict_node(ALGO algo, void *structure)
         // look for <0,0> but do not reset the reference bits
         if (!isreferenced && !ismodified)
         {
+          found = true;
           break;
         }
       }
@@ -310,6 +318,7 @@ node *evict_node(ALGO algo, void *structure)
         // look for <0,1>, if step is 2 reset the reference bits
         if (!isreferenced && ismodified)
         {
+          found = true;
           break;
         }
         if (step == 2)
@@ -320,11 +329,9 @@ node *evict_node(ALGO algo, void *structure)
       prev = curr;
       curr = curr->next;
     }
-    if (step < 4)
-    {
-      step++;
+    step++;
+    if (step != 5 && !found)
       goto cycle;
-    }
     // according to the alogrithm, an evicted node is guaranteed
     if (prev == NULL)
     {

@@ -158,14 +158,9 @@ void read_source(memsim *simulator, const char *inputfile, const int tick)
   char *token = NULL; /* 'w' for write or 'r' for read */
 
   int memoryreferences = 0;
+  int pagefaults = 0;
   while ((read = getline(&line, &len, infile)) != -1)
   {
-    memoryreferences++;
-    if (memoryreferences == tick)
-    {
-      memoryreferences = 0;
-      reset_references(simulator);
-    }
     token = strtok(line, " ");
     if (strcmp(token, "w") == 0)
     {
@@ -192,7 +187,7 @@ void read_source(memsim *simulator, const char *inputfile, const int tick)
         set_modifiedpte(simulator->type, simulator->pagetable, virtualaddr);
         uint16_t offset = virtualaddr & 0x003f;
         uint16_t framenumber = get_framenumber(simulator->type, simulator->pagetable, virtualaddr);
-        page *frame = &(simulator->memory[framenumber]);
+        page *frame = simulator->memory + framenumber;
         frame->content[offset] = value;
         write_log(simulator, virtualaddr, framenumber, false);
         if (simulator->algo == LRU)
@@ -202,6 +197,7 @@ void read_source(memsim *simulator, const char *inputfile, const int tick)
       }
       else
       {
+        pagefaults++;
         uint16_t page_idx = (virtualaddr & 0xffc0) >> 6;
         page *pagedin_page = get_pagecpy(simulator->ss, page_idx);
         pagetableentry *pte_ref = get_pte_reference(simulator->type, simulator->pagetable, virtualaddr);
@@ -214,7 +210,7 @@ void read_source(memsim *simulator, const char *inputfile, const int tick)
           set_referencedpte(simulator->type, simulator->pagetable, virtualaddr);
           set_modifiedpte(simulator->type, simulator->pagetable, virtualaddr);
           uint16_t offset = virtualaddr & 0x003f;
-          page *frame = &(simulator->memory[simulator->curr]);
+          page *frame = simulator->memory + simulator->curr;
           frame->content[offset] = value; // and write
 
           insert_pte(
@@ -231,15 +227,15 @@ void read_source(memsim *simulator, const char *inputfile, const int tick)
           node *evicted_page = evict_node(
               simulator->algo,
               simulator->structure);
-          uint16_t framenumber = get_framenumber(simulator->algo, simulator->pagetable, evicted_page->virtualaddr);
+          uint16_t framenumber = get_framenumber(simulator->type, simulator->pagetable, evicted_page->virtualaddr);
           insert_pte(
               simulator->algo,
               simulator->structure,
               pte_ref,
               simulator->memory + framenumber,
               virtualaddr);
-          unset_validpte(simulator->algo, simulator->pagetable, evicted_page->virtualaddr);
-          unset_referencedpte(simulator->algo, simulator->pagetable, evicted_page->virtualaddr);
+          unset_validpte(simulator->type, simulator->pagetable, evicted_page->virtualaddr);
+          unset_referencedpte(simulator->type, simulator->pagetable, evicted_page->virtualaddr);
           if (ismodified_pte(simulator->type, simulator->pagetable, evicted_page->virtualaddr))
           {
             // overwrite the corresponding page in the swapspace
@@ -254,7 +250,7 @@ void read_source(memsim *simulator, const char *inputfile, const int tick)
           set_referencedpte(simulator->type, simulator->pagetable, virtualaddr);
           set_modifiedpte(simulator->type, simulator->pagetable, virtualaddr);
           uint16_t offset = virtualaddr & 0x003f;
-          page *frame = &(simulator->memory[framenumber]);
+          page *frame = simulator->memory + framenumber;
           frame->content[offset] = value; // and write
 
           write_log(simulator, virtualaddr, framenumber, true);
@@ -272,9 +268,15 @@ void read_source(memsim *simulator, const char *inputfile, const int tick)
         fprintf(stderr, "[ERROR] failed to parse virtual address to uint16_t\n");
         break;
       }
+
+      printf("here 1\n");
+      fflush(stdout);
       // if the page is valid, simply set its reference bit
       if (isvalid_pte(simulator->type, simulator->pagetable, virtualaddr))
       {
+        printf("here 2\n");
+        fflush(stdout);
+
         set_referencedpte(simulator->type, simulator->pagetable, virtualaddr);
         uint16_t framenumber = get_framenumber(simulator->type, simulator->pagetable, virtualaddr);
         write_log(simulator, virtualaddr, framenumber, false);
@@ -285,12 +287,19 @@ void read_source(memsim *simulator, const char *inputfile, const int tick)
       }
       else
       {
+        printf("here 3\n");
+        fflush(stdout);
+
+        pagefaults++;
         uint16_t page_idx = (virtualaddr & 0xffc0) >> 6;
         page *pagedin_page = get_pagecpy(simulator->ss, page_idx);
         pagetableentry *pte_ref = get_pte_reference(simulator->type, simulator->pagetable, virtualaddr);
 
         if (simulator->curr < simulator->framecount)
         {
+          printf("here 4\n");
+          fflush(stdout);
+
           memcpy(simulator->memory + simulator->curr, pagedin_page, sizeof(page));
           update_framenumber(simulator->type, simulator->pagetable, virtualaddr, simulator->curr);
           set_validpte(simulator->type, simulator->pagetable, virtualaddr);
@@ -307,18 +316,26 @@ void read_source(memsim *simulator, const char *inputfile, const int tick)
         }
         else
         {
+          printf("here 5\n");
+          fflush(stdout);
+
           node *evicted_page = evict_node(
               simulator->algo,
               simulator->structure);
-          uint16_t framenumber = get_framenumber(simulator->algo, simulator->pagetable, evicted_page->virtualaddr);
+          printf("here 6\n");
+          fflush(stdout);
+          uint16_t framenumber = get_framenumber(simulator->type, simulator->pagetable, evicted_page->virtualaddr);
           insert_pte(
               simulator->algo,
               simulator->structure,
               pte_ref,
               simulator->memory + framenumber,
               virtualaddr);
-          unset_validpte(simulator->algo, simulator->pagetable, evicted_page->virtualaddr);
-          unset_referencedpte(simulator->algo, simulator->pagetable, evicted_page->virtualaddr);
+          printf("here 7\n");
+          fflush(stdout);
+
+          unset_validpte(simulator->type, simulator->pagetable, evicted_page->virtualaddr);
+          unset_referencedpte(simulator->type, simulator->pagetable, evicted_page->virtualaddr);
           if (ismodified_pte(simulator->type, simulator->pagetable, evicted_page->virtualaddr))
           {
             // overwrite the corresponding page in the swapspace
@@ -342,9 +359,18 @@ void read_source(memsim *simulator, const char *inputfile, const int tick)
       fprintf(stderr, "[ERROR] read_source: invalid operation %s\n", token);
       break;
     }
+
+    memoryreferences++;
+    if (memoryreferences == tick)
+    {
+      memoryreferences = 0;
+      reset_references(simulator);
+    }
   }
   free(line);
   fclose(infile);
+
+  fprintf(simulator->outfile, "%d", pagefaults);
 }
 
 void reset_references(memsim *simulator)

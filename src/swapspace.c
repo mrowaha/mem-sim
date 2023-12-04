@@ -119,14 +119,14 @@ void free_swapspace(swapspace **ss)
   }
 }
 
-page *get_pagecpy(const swapspace *ss, const int idx)
+page *get_pagecpy(const swapspace *ss, const uint16_t idx)
 {
   page *pagecpy = (page *)malloc(sizeof(page));
   memcpy(pagecpy, ss->memorymap + idx, sizeof(page));
   return pagecpy;
 }
 
-bool write_page(swapspace *ss, const int idx, const page *pg)
+bool write_page(swapspace *ss, const uint16_t idx, const page *pg)
 {
   memcpy(ss->memorymap + idx, pg, sizeof(page));
   return true;

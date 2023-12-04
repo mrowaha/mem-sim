@@ -5,8 +5,8 @@ BUILD_DIR := ./bin
 .DEFAULT_GOAL=all
 
 SIMULATOR=memsim
-LEVEL=1
-ADDRFILE=infile.txt
+LEVEL=2
+ADDRFILE=testfile.txt
 SWAPFILE=swapfile.bin
 FCOUNT=4
 ALGO=LRU
@@ -19,7 +19,7 @@ build: ./src/*.c
 	@$(CC) ./src/*.c -o ./bin/memsim $(CFLAGS) $(SFLAGS)
 
 run:
-	@./bin/memsim -p $(LEVEL) -r $(ADDRFILE) -s $(SWAPFILE) -f $(FCOUNT) -a $(ALGO) -t $(TICK) -o $(OUTFILE)
+	./bin/memsim -p $(LEVEL) -r $(ADDRFILE) -s $(SWAPFILE) -f $(FCOUNT) -a $(ALGO) -t $(TICK) -o $(OUTFILE)
 
 leak:
 	@valgrind --leak-check=yes ./bin/memsim -p $(LEVEL) -r $(ADDRFILE) -s $(SWAPFILE) -f $(FCOUNT) -a $(ALGO) -t $(TICK) -o $(OUTFILE)

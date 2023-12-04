@@ -44,9 +44,9 @@ newswapspace new_swapspace(char *filename);
 
 void free_swapspace(swapspace **);
 
-page *get_pagecpy(const swapspace *, const int idx);
+page *get_pagecpy(const swapspace *, const uint16_t idx);
 
-bool write_page(swapspace *, const int idx, const page *);
+bool write_page(swapspace *, const uint16_t idx, const page *);
 
 void walk_swapspace(const swapspace *);
 
