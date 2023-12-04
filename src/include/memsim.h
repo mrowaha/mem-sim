@@ -24,6 +24,8 @@ memsim *new_memsim(int level, int fcount, char *swapfile, char *outfile, ALGO al
 
 void free_memsim(memsim *);
 
-void read_source(memsim *, const char *inputfile);
+void read_source(memsim *, const char *inputfile, const int tick);
+
+void reset_references(memsim *);
 
 #endif

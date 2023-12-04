@@ -25,7 +25,7 @@ int main(const int argc, const char *argv[])
       process_args->outfile,
       process_args->algo);
 
-  read_source(simulator, process_args->addrfile);
+  read_source(simulator, process_args->addrfile, process_args->tick);
   free_memsim(simulator);
 exit:
   free_cmdargs(process_args);

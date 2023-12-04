@@ -136,7 +136,7 @@ memsim *new_memsim(
   return simulator;
 }
 
-void read_source(memsim *simulator, const char *inputfile)
+void read_source(memsim *simulator, const char *inputfile, const int tick)
 {
 
   FILE *infile = fopen(inputfile, "r");
@@ -151,8 +151,15 @@ void read_source(memsim *simulator, const char *inputfile)
   ssize_t read;
   char *token = NULL; /* 'w' for write or 'r' for read */
 
+  int memoryreferences = 0;
   while ((read = getline(&line, &len, infile)) != -1)
   {
+    memoryreferences++;
+    if (memoryreferences == tick)
+    {
+      memoryreferences = 0;
+      reset_references(simulator);
+    }
     token = strtok(line, " ");
     if (strcmp(token, "w") == 0)
     {
@@ -324,6 +331,31 @@ void read_source(memsim *simulator, const char *inputfile)
   }
   free(line);
   fclose(infile);
+}
+
+void reset_references(memsim *simulator)
+{
+  if (simulator->type == ONE_LEVEL)
+  {
+    for (uint16_t i = 0; i < PAGES; i++)
+    {
+      uint16_t virtualaddr = i << 6;
+      unset_referencedpte(ONE_LEVEL, simulator->pagetable, virtualaddr);
+    }
+  }
+  else
+  {
+    doublepagetable *pgtable = (doublepagetable *)simulator->pagetable;
+    for (uint16_t i = 0; i < (uint16_t)pgtable->maxouttable; i++)
+    {
+      if (pgtable->pagetables[i] == NULL)
+      {
+        continue;
+      }
+      uint16_t virtualaddr = i << 6;
+      unset_referencedpte(TWO_LEVEL, simulator->pagetable, virtualaddr);
+    }
+  }
 }
 
 void free_memsim(memsim *simulator)
